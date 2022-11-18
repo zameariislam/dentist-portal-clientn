@@ -5,6 +5,8 @@ const express = require('express')
 
 const app = express()
 const cors = require('cors')
+const jwt = require('jsonwebtoken')
+
 require('dotenv').config()
 
 const port = process.env.PORT || 8000
@@ -42,6 +44,7 @@ dbConnect()
 
 const appoinmentOptionCollection = client.db("doctorsPortal").collection("appoinmentOptions");
 const bookingsCollection = client.db("doctorsPortal").collection("bookings");
+const usersCollection = client.db("doctorsPortal").collection("users");
 
 
 
@@ -144,6 +147,87 @@ app.post('/bookings', async (req, res) => {
             error: error.message,
         });
     }
+
+})
+
+app.get('/bookings', async (req, res) => {
+
+    try {
+        const email = req.query.email
+        const query = { email: email }
+        console.log(query)
+
+        const bookings = await bookingsCollection.find(query).toArray()
+        console.log(bookings)
+
+
+        res.send(bookings);
+
+    }
+    catch (error) {
+        res.send(error.message);
+
+
+    }
+
+
+
+
+
+})
+
+
+
+
+app.post('/users', async (req, res) => {
+
+
+    try {
+        const user = req.body
+
+        console.log(user)
+
+        const result = await usersCollection.insertOne(user)
+        res.send(result)
+
+
+
+    } catch (error) {
+
+        res.send({
+            success: false,
+            error: error.message,
+        });
+    }
+
+})
+
+app.get('/jwt', async (req, res) => {
+    try {
+
+        const email = req.query.email
+        const query = { email: email }
+        const user = await usersCollection.findOne(query)
+        if (user && user?.email) {
+
+            const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '1h' })
+            return res.send({ accessToken: token })
+
+
+        }
+        else {
+            res.status(403).send({ accessToken: '' })
+
+        }
+
+
+
+    }
+    catch (error) {
+        res.send(error.message)
+
+    }
+
 
 })
 
