@@ -47,7 +47,19 @@ const bookingsCollection = client.db("doctorsPortal").collection("bookings");
 const usersCollection = client.db("doctorsPortal").collection("users");
 
 
+const verifyJwt = (req, res, next) => {
+    const authHeader = req.headers.authorization
+    if (!authHeader) {
+        return res.status(401).send('unAuthorized Access')
 
+
+    }
+    const token= authHeader.split(' ')[1]
+
+
+
+
+}
 
 
 
@@ -150,15 +162,16 @@ app.post('/bookings', async (req, res) => {
 
 })
 
-app.get('/bookings', async (req, res) => {
+app.get('/bookings', verifyJwt, async (req, res) => {
 
     try {
         const email = req.query.email
+
         const query = { email: email }
-        console.log(query)
+
 
         const bookings = await bookingsCollection.find(query).toArray()
-        console.log(bookings)
+
 
 
         res.send(bookings);
